@@ -5,6 +5,7 @@
 import 'package:hive/hive.dart';
 import 'package:pilipala/http/index.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:convert';
 
 import 'package:pilipala/utils/storage.dart';
@@ -119,6 +120,7 @@ class WbiSign {
     }
     var resp =
         await Request().get('https://api.bilibili.com/x/web-interface/nav');
+    SmartDialog.showToast('签到！');
     var jsonContent = resp.data['data'];
 
     String imgUrl = jsonContent['wbi_img']['img_url'];
