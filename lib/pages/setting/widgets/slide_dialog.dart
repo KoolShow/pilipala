@@ -44,7 +44,7 @@ class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
           min: widget.min,
           max: widget.max,
           divisions: widget.divisions,
-          label: '${widget.value}${widget.suffix ?? ""}',
+          label: '${_tempValue}${widget.suffix ?? ""}',
           onChanged: (double value) {
             print(value);
             setState(() {
