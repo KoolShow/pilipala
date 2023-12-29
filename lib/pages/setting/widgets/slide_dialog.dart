@@ -23,12 +23,12 @@ class SlideDialog<T extends num> extends StatefulWidget {
 }
 
 class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
-  late T _tempValue;
+  late double _tempValue;
 
   @override
   void initState() {
     super.initState();
-    _tempValue = widget.value;
+    _tempValue = widget.value.toDouble();
   }
 
   @override
@@ -40,15 +40,15 @@ class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
       content: SizedBox(
         height: 40,
         child: Slider(
-          value: widget.value.toDouble(),
+          value: _tempValue,
           min: widget.min,
           max: widget.max,
           divisions: widget.divisions,
-          label: '${widget.value}${widget.suffix}',
+          label: '${widget.value}${widget.suffix ?? ""}',
           onChanged: (double value) {
             print(value);
             setState(() {
-              _tempValue = value as T;
+              _tempValue = value;
             });
           },
         ),
@@ -61,7 +61,7 @@ class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             )),
         TextButton(
-            onPressed: () => Navigator.pop(context, _tempValue),
+            onPressed: () => Navigator.pop(context, _tempValue as T),
             child: const Text('确定'))
       ],
     );
