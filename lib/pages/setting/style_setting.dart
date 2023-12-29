@@ -324,6 +324,29 @@ class _StyleSettingState extends State<StyleSetting> {
           ListTile(
             dense: false,
             onTap: () async {
+              double? result = await showDialog(
+                context: context,
+                builder: (context) {
+                  return SlideDialog<double>(
+                      title: 'Toast透明度',
+                      value: toastOpacity,
+                      min: 0.0,
+                      max: 1.0,
+                      divisions: 10);
+                },
+              );
+              if (result != null) {
+                toastOpacity = result;
+                setting.put(SettingBoxKey.defaultToastOp, result);
+                setState(() {});
+              }
+            },
+            title: Text('Toast不透明度', style: titleStyle),
+            subtitle: Text('自定义Toast不透明度', style: subTitleStyle),
+          ),
+          ListTile(
+            dense: false,
+            onTap: () async {
               ThemeType? result = await showDialog(
                 context: context,
                 builder: (context) {

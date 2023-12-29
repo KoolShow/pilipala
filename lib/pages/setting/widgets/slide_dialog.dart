@@ -23,7 +23,6 @@ class SlideDialog<T extends num> extends StatefulWidget {
 }
 
 class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
-
   late double _tempValue;
 
   @override
@@ -41,12 +40,11 @@ class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
       content: SizedBox(
         height: 40,
         child: Slider(
-
           value: _tempValue,
           min: widget.min,
           max: widget.max,
           divisions: widget.divisions,
-          label: '${widget.value}${widget.suffix ?? ""}',
+          label: '${_tempValue}${widget.suffix ?? ""}',
           onChanged: (double value) {
             print(value);
             setState(() {
