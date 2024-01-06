@@ -411,8 +411,12 @@ class VideoIntroController extends GetxController {
           content: Text(currentStatus == 0 ? '关注UP主?' : '取消关注UP主?'),
           actions: [
             TextButton(
-                onPressed: () => SmartDialog.dismiss(),
-                child: const Text('点错了')),
+              onPressed: () => SmartDialog.dismiss(),
+              child: Text(
+                '点错了',
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
+              ),
+            ),
             TextButton(
               onPressed: () async {
                 var result = await VideoHttp.relationMod(
