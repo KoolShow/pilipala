@@ -221,6 +221,7 @@ class PlPlayerController {
   late double showArea;
   late double opacityVal;
   late double fontSizeVal;
+  late double strokeWidth;
   late double danmakuDurationVal;
   late List<double> speedsList;
   // 缓存
@@ -275,6 +276,9 @@ class PlPlayerController {
     // 弹幕时间
     danmakuDurationVal =
         localCache.get(LocalCacheKey.danmakuDuration, defaultValue: 4.0);
+    // 描边粗细
+    strokeWidth =
+        localCache.get(LocalCacheKey.strokeWidth, defaultValue: 1.5);
     playRepeat = PlayRepeat.values.toList().firstWhere(
           (e) =>
               e.value ==
@@ -289,9 +293,8 @@ class PlPlayerController {
       _longPressSpeed.value = videoStorage
           .get(VideoBoxKey.longPressSpeedDefault, defaultValue: 2.0);
     }
-    final List<double> speedsListTemp = videoStorage
-        .get(VideoBoxKey.customSpeedsList, defaultValue: <double>[]);
-    speedsList = List<double>.from(speedsListTemp);
+    speedsList = List<double>.from(videoStorage
+        .get(VideoBoxKey.customSpeedsList, defaultValue: <double>[]));
     for (final PlaySpeed i in PlaySpeed.values) {
       speedsList.add(i.value);
     }
@@ -622,7 +625,7 @@ class PlPlayerController {
     if (duration.value.inSeconds != 0) {
       if (type != 'slider') {
         /// 拖动进度条调节时，不等待第一帧，防止抖动
-        await _videoPlayerController!.stream.buffer.first;
+        await _videoPlayerController?.stream.buffer.first;
       }
       await _videoPlayerController?.seek(position);
       // if (playerStatus.stopped) {
@@ -733,6 +736,9 @@ class PlPlayerController {
 
   /// 隐藏控制条
   void _hideTaskControls() {
+    if (_timer != null) {
+      _timer!.cancel();
+    }
     _timer = Timer(const Duration(milliseconds: 3000), () {
       if (!isSliderMoving.value) {
         controls = false;
@@ -784,7 +790,7 @@ class PlPlayerController {
     volume.value = volumeNew;
 
     try {
-      FlutterVolumeController.showSystemUI = false;
+      FlutterVolumeController.updateShowSystemUI(false);
       await FlutterVolumeController.setVolume(volumeNew);
     } catch (err) {
       print(err);
@@ -1084,12 +1090,14 @@ class PlPlayerController {
       localCache.put(LocalCacheKey.danmakuOpacity, opacityVal);
       localCache.put(LocalCacheKey.danmakuFontScale, fontSizeVal);
       localCache.put(LocalCacheKey.danmakuDuration, danmakuDurationVal);
-
-      var pp = _videoPlayerController!.platform as NativePlayer;
-      await pp.setProperty('audio-files', '');
-      removeListeners();
-      await _videoPlayerController?.dispose();
-      _videoPlayerController = null;
+      localCache.put(LocalCacheKey.strokeWidth, strokeWidth);
+      if (_videoPlayerController != null) {
+        var pp = _videoPlayerController!.platform as NativePlayer;
+        await pp.setProperty('audio-files', '');
+        removeListeners();
+        await _videoPlayerController?.dispose();
+        _videoPlayerController = null;
+      }
       _instance = null;
       // 关闭所有视频页面恢复亮度
       resetBrightness();

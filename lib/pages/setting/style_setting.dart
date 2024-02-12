@@ -10,6 +10,7 @@ import 'package:pilipala/pages/setting/widgets/select_dialog.dart';
 import 'package:pilipala/pages/setting/widgets/slide_dialog.dart';
 import 'package:pilipala/utils/storage.dart';
 
+import '../../models/common/dynamic_badge_mode.dart';
 import 'controller.dart';
 import 'widgets/switch_item.dart';
 
@@ -243,6 +244,14 @@ class _StyleSettingState extends State<StyleSetting> {
           ),
           ListTile(
             dense: false,
+            onTap: () => settingController.setDynamicBadgeMode(context),
+            title: Text('动态未读标记', style: titleStyle),
+            subtitle: Obx(() => Text(
+                '当前标记样式：${settingController.dynamicBadgeType.value.description}',
+                style: subTitleStyle)),
+          ),
+          ListTile(
+            dense: false,
             onTap: () => Get.toNamed('/colorSetting'),
             title: Text('应用主题', style: titleStyle),
             subtitle: Obx(() => Text(
@@ -253,6 +262,11 @@ class _StyleSettingState extends State<StyleSetting> {
             dense: false,
             onTap: () => Get.toNamed('/fontSizeSetting'),
             title: Text('字体大小', style: titleStyle),
+          ),
+          ListTile(
+            dense: false,
+            onTap: () => Get.toNamed('/tabbarSetting'),
+            title: Text('首页tabbar', style: titleStyle),
           ),
           if (Platform.isAndroid)
             ListTile(

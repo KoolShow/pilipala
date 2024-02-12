@@ -7,6 +7,7 @@ import 'package:pilipala/http/index.dart';
 import 'package:pilipala/models/github/latest.dart';
 import 'package:pilipala/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../utils/cache_manage.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -17,6 +18,19 @@ class AboutPage extends StatefulWidget {
 
 class _AboutPageState extends State<AboutPage> {
   final AboutController _aboutController = Get.put(AboutController());
+  String cacheSize = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // 读取缓存占用
+    getCacheSize();
+  }
+
+  Future<void> getCacheSize() async {
+    final res = await CacheManage().loadApplicationCache();
+    setState(() => cacheSize = res);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +101,14 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
             ListTile(
+              onTap: () => _aboutController.webSiteUrl(),
+              title: const Text('访问官网'),
+              trailing: Text(
+                'https://pilipalanet.mysxl.cn',
+                style: subTitleStyle,
+              ),
+            ),
+            ListTile(
               onTap: () => _aboutController.panDownload(),
               title: const Text('网盘下载'),
               trailing: Text(
@@ -123,6 +145,22 @@ class _AboutPageState extends State<AboutPage> {
             ListTile(
               onTap: () => _aboutController.aPay(),
               title: const Text('赞助'),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: outline),
+            ),
+            ListTile(
+              onTap: () => _aboutController.logs(),
+              title: const Text('错误日志'),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: outline),
+            ),
+            ListTile(
+              onTap: () async {
+                var cleanStatus = await CacheManage().clearCacheAll();
+                if (cleanStatus) {
+                  getCacheSize();
+                }
+              },
+              title: const Text('清除缓存'),
+              subtitle: Text('图片及网络缓存 $cacheSize', style: subTitleStyle),
               trailing: Icon(Icons.arrow_forward_ios, size: 16, color: outline),
             ),
           ],
@@ -243,5 +281,18 @@ class AboutController extends GetxController {
     } catch (e) {
       print(e);
     }
+  }
+
+  // 官网
+  webSiteUrl() {
+    launchUrl(
+      Uri.parse('https://pilipalanet.mysxl.cn'),
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
+  // 日志
+  logs() {
+    Get.toNamed('/logs');
   }
 }

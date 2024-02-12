@@ -9,6 +9,7 @@ import '../models/user/fav_folder.dart';
 import '../models/video/ai.dart';
 import '../models/video/play/url.dart';
 import '../models/video_detail_res.dart';
+import '../utils/recommend_filter.dart';
 import '../utils/storage.dart';
 import '../utils/wbi_sign.dart';
 import 'api.dart';
@@ -32,27 +33,41 @@ class VideoHttp {
         Api.recommendListWeb,
         data: {
           'version': 1,
-          'feed_version': 'V3',
+          'feed_version': 'V8',
+          'homepage_ver': 1,
           'ps': ps,
           'fresh_idx': freshIdx,
-          'fresh_type': 999999
+          'brush': freshIdx,
+          'fresh_type': 4
         },
       );
       if (res.data['code'] == 0) {
         List<RecVideoItemModel> list = [];
+        List<int> blackMidsList =
+            setting.get(SettingBoxKey.blackMidsList, defaultValue: [-1]);
         for (var i in res.data['data']['item']) {
-          list.add(RecVideoItemModel.fromJson(i));
+          //过滤掉live与ad，以及拉黑用户
+          if (i['goto'] == 'av' &&
+              (i['owner'] != null &&
+                  !blackMidsList.contains(i['owner']['mid']))) {
+            RecVideoItemModel videoItem = RecVideoItemModel.fromJson(i);
+            if (!RecommendFilter.filter(videoItem)) {
+              list.add(videoItem);
+            }
+          }
         }
         return {'status': true, 'data': list};
       } else {
-        return {'status': false, 'data': [], 'msg': ''};
+        return {'status': false, 'data': [], 'msg': res.data['message']};
       }
     } catch (err) {
       return {'status': false, 'data': [], 'msg': err.toString()};
     }
   }
 
-  static Future rcmdVideoListApp({int? ps, required int freshIdx}) async {
+  // 添加额外的loginState变量模拟未登录状态
+  static Future rcmdVideoListApp(
+      {bool loginStatus = true, required int freshIdx}) async {
     try {
       var res = await Request().get(
         Api.recommendListApp,
@@ -65,9 +80,11 @@ class VideoHttp {
           'device_name': 'vivo',
           'pull': freshIdx == 0 ? 'true' : 'false',
           'appkey': Constants.appKey,
-          'access_key': localCache
-                  .get(LocalCacheKey.accessKey, defaultValue: {})['value'] ??
-              ''
+          'access_key': loginStatus
+              ? (localCache.get(LocalCacheKey.accessKey,
+                      defaultValue: {})['value'] ??
+                  '')
+              : ''
         },
       );
       if (res.data['code'] == 0) {
@@ -80,12 +97,15 @@ class VideoHttp {
               (!enableRcmdDynamic ? i['card_goto'] != 'picture' : true) &&
               (i['args'] != null &&
                   !blackMidsList.contains(i['args']['up_mid']))) {
-            list.add(RecVideoItemAppModel.fromJson(i));
+            RecVideoItemAppModel videoItem = RecVideoItemAppModel.fromJson(i);
+            if (!RecommendFilter.filter(videoItem)) {
+              list.add(videoItem);
+            }
           }
         }
         return {'status': true, 'data': list};
       } else {
-        return {'status': false, 'data': [], 'msg': ''};
+        return {'status': false, 'data': [], 'msg': res.data['message']};
       }
     } catch (err) {
       return {'status': false, 'data': [], 'msg': err.toString()};
@@ -133,6 +153,12 @@ class VideoHttp {
       data['bvid'] = bvid;
     }
 
+    // 免登录查看1080p
+    if (userInfoCache.get('userInfoCache') == null &&
+        setting.get(SettingBoxKey.p1080, defaultValue: true)) {
+      data['try_look'] = 1;
+    }
+
     Map params = await WbiSign().makSign({
       ...data,
       'fourk': 1,
@@ -141,11 +167,6 @@ class VideoHttp {
       'web_location': 1550101,
     });
 
-    // 免登录查看1080p
-    if (userInfoCache.get('userInfoCache') == null &&
-        setting.get(SettingBoxKey.p1080, defaultValue: true)) {
-      data['try_look'] = 1;
-    }
     try {
       var res = await Request().get(Api.videoUrl, data: params);
       if (res.data['code'] == 0) {
@@ -195,7 +216,10 @@ class VideoHttp {
     if (res.data['code'] == 0) {
       List<HotVideoItemModel> list = [];
       for (var i in res.data['data']) {
-        list.add(HotVideoItemModel.fromJson(i));
+        HotVideoItemModel videoItem = HotVideoItemModel.fromJson(i);
+        if (!RecommendFilter.filter(videoItem, relatedVideos: true)) {
+          list.add(videoItem);
+        }
       }
       return {'status': true, 'data': list};
     } else {
@@ -216,10 +240,11 @@ class VideoHttp {
   // 获取投币状态
   static Future hasCoinVideo({required String bvid}) async {
     var res = await Request().get(Api.hasCoinVideo, data: {'bvid': bvid});
+    print('res: $res');
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {
-      return {'status': true, 'data': []};
+      return {'status': false, 'data': []};
     }
   }
 
@@ -297,7 +322,7 @@ class VideoHttp {
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {
-      return {'status': false, 'data': []};
+      return {'status': false, 'data': [], 'msg': res.data['message']};
     }
   }
 
@@ -353,7 +378,7 @@ class VideoHttp {
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {
-      return {'status': true, 'data': []};
+      return {'status': false, 'data': []};
     }
   }
 
@@ -369,7 +394,7 @@ class VideoHttp {
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {
-      return {'status': true, 'data': []};
+      return {'status': false, 'data': []};
     }
   }
 
@@ -425,6 +450,8 @@ class VideoHttp {
     });
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
+    } else {
+      return {'status': false, 'data': null, 'msg': res.data['message']};
     }
   }
 
@@ -439,11 +466,13 @@ class VideoHttp {
       'up_mid': upMid,
     });
     var res = await Request().get(Api.aiConclusion, data: params);
-    if (res.data['code'] == 0) {
+    if (res.data['code'] == 0 && res.data['data']['code'] == 0) {
       return {
         'status': true,
         'data': AiConclusionModel.fromJson(res.data['data']),
       };
+    } else {
+      return {'status': false, 'data': []};
     }
   }
 }
