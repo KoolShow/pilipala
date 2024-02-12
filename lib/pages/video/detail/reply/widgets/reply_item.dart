@@ -639,7 +639,7 @@ InlineSpan buildContent(
               },
           ),
         );
-      } else if (RegExp(r'^\b[0-9]{1,2}[:：][0-9]{2}\b$').hasMatch(matchStr)) {
+      } else if (RegExp(r'^\b(\d+[:：])?[0-5]?[0-9][:：][0-5]?[0-9]\b$').hasMatch(matchStr)) {
         spanChilds.add(
           TextSpan(
             text: ' $matchStr ',
