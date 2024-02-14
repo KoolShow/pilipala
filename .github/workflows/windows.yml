@@ -64,7 +64,7 @@ jobs:
 
       - name: 重命名应用 Pili-windows-x64.zip
         run: |
-          7z a -tzip Pili-windows-x64.zip -r build/windows/runner/Release/*
+          7z a -tzip Pili-windows-x64.zip -r build/windows/x64/runner/Release/*
         shell: bash
 
       - name: 构建和发布release
