@@ -67,12 +67,8 @@ jobs:
           7z a -tzip Pili-windows-x64.zip -r build/windows/x64/runner/Release/*
         shell: bash
 
-      - name: 构建和发布release
-        uses: ncipollo/release-action@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          # release title
-          name: v${{ steps.version.outputs.version }}
-          artifacts: "Pili-windows-x64.zip"
-          bodyFile: "change_log/${{steps.version.outputs.version}}.md"
-          token: ${{ secrets.GIT_TOKEN }}
-          allowUpdates: true
+          name: Pili-Windows-x64
+          path: Pili-windows-x64.zip
