@@ -128,6 +128,7 @@ class SettingBoxKey {
       defaultTextScale = 'textScale',
       dynamicColor = 'dynamicColor', // bool
       customColor = 'customColor', // 自定义主题色
+      vipColor = 'vipColor', // 自定义大会员颜色
       enableSingleRow = 'enableSingleRow', // 首页单列
       displayMode = 'displayMode',
       customRows = 'customRows', // 自定义列

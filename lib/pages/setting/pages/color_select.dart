@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:pilipala/models/common/color_type.dart';
+import 'package:pilipala/pages/setting/controller.dart';
+import 'package:pilipala/pages/setting/widgets/select_dialog.dart';
 import 'package:pilipala/utils/storage.dart';
 
 class ColorSelectPage extends StatefulWidget {
@@ -34,9 +36,15 @@ List<Item> generateItems(int count) {
 
 class _ColorSelectPageState extends State<ColorSelectPage> {
   final ColorSelectController ctr = Get.put(ColorSelectController());
+  final SettingController settingController = Get.put(SettingController());
 
   @override
   Widget build(BuildContext context) {
+    TextStyle titleStyle = Theme.of(context).textTheme.titleMedium!;
+    TextStyle subTitleStyle = Theme.of(context)
+        .textTheme
+        .labelMedium!
+        .copyWith(color: Theme.of(context).colorScheme.outline);
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -135,6 +143,34 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               );
             },
           ),
+          ListTile(
+            dense: false,
+            onTap: () => () async {
+              int customVipColor = 0;
+              int? result = await showDialog(
+                context: context,
+                builder: (context) {
+                  return SelectDialog<int>(
+                      title: '自定义大会员颜色',
+                      value: customVipColor,
+                      values: const [
+                        {'title': '粉色 (默认)', 'value': 0},
+                        {'title': '动态取色', 'value': 1},
+                        {'title': '小会员绿', 'value': 2}
+                      ]);
+                },
+              );
+              if (result != null) {
+                customVipColor = result;
+                ctr.setting.put(SettingBoxKey.vipColor, result);
+                setState(() {});
+              }
+            },
+            title: Text('自定义大会员颜色', style: titleStyle),
+            subtitle: Obx(() => Text(
+                '当前颜色：${['粉色', '动态取色', '小会员绿'][ctr.vipColor.value]}',
+                style: subTitleStyle)),
+          ),
         ],
       ),
     );
@@ -147,6 +183,7 @@ class ColorSelectController extends GetxController {
   RxInt type = 0.obs;
   late final List<Map<String, dynamic>> colorThemes;
   RxInt currentColor = 0.obs;
+  RxInt vipColor = 0.obs;
 
   @override
   void onInit() {
@@ -157,6 +194,7 @@ class ColorSelectController extends GetxController {
     type.value = dynamicColor.value ? 0 : 1;
     currentColor.value =
         setting.get(SettingBoxKey.customColor, defaultValue: 0);
+    vipColor.value = setting.get(SettingBoxKey.vipColor, defaultValue: 0);
     super.onInit();
   }
 }
