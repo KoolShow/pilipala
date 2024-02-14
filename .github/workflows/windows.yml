@@ -13,7 +13,7 @@ on:
 
 # 可以有多个jobs
 jobs:
-  build_apk:
+  build_windows:
     # 运行环境 ubuntu-latest windows-latest mac-latest
     runs-on: windows-latest
 
@@ -64,7 +64,7 @@ jobs:
 
       - name: 重命名应用 Pili-windows-x64.zip
         run: |
-          7z a -tzip Pili-windows-x64.zip -r ./build/windows/runner/Release/*
+          7z a -tzip Pili-windows-x64.zip -r build/windows/runner/Release/*
         shell: bash
 
       - name: 构建和发布release
